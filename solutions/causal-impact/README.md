@@ -12,11 +12,11 @@ series data based on DTW distances.
 ### What you can do with CausalImpact with experiment design
 
 -   Experimental Design
-    -   load time series data from spreadsheet or csv file
+    -   load time series data from google spreadsheet or csv file
     -   classify time series data so that parallel trend assumptions can be made
     -   simulate the conditions required for verification
 -   CausalImpact Analysis
-    -   load time series data from spreadsheet or csv file
+    -   load time series data from google spreadsheet or csv file
     -   CausalImpact Analysis
 
 ### Motivation to develop and open the source code
@@ -36,5 +36,14 @@ trend assumptions can be made.
 ## Getting started
 
 1.  Prepare the time series data on spreadsheet or csv file
-2.  Open ipynb　file with **Open in Colab Button**.
+2.  Open ipynb file with **[Open in Colab](https://colab.research.google.com/github/google/business_intelligence_group/blob/main/solutions/causal-impact/CausalImpact_with_Experimental_Design.ipynb)** Button.
 3.  Run cells in sequence
+
+## Tutorial
+
+1. Press the Connect button to connect to the runtime
+
+2. Scroll to Experimental Design Section and run Step 1 and Step 2 cells
+
+3. When the cell in Step 2 is executed, choose google_sheet or csv_file as the data source. Enter the required information in the selected source.
+![ed_step2](https://user-images.githubusercontent.com/61218928/213386208-b43fba73-953a-4087-b65d-a1a3e008bad1.png)
