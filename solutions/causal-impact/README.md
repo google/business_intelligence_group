@@ -41,9 +41,23 @@ trend assumptions can be made.
 
 ## Tutorial
 
-1. Press the Connect button to connect to the runtime
+1. Press the **Connect** button to connect to the runtime
 
-2. Scroll to Experimental Design Section and run Step 1 and Step 2 cells
+2. Scroll to Experimental Design Section and run **Step 1** and **Step 2** cells
 
-3. When the cell in Step 2 is executed, choose google_sheet or csv_file as the data source. Enter the required information in the selected source.
-![ed_step2](https://user-images.githubusercontent.com/61218928/213386208-b43fba73-953a-4087-b65d-a1a3e008bad1.png)
+3. When the cell in Step 2 is executed, input fields will appear in the cell. Choose **google_spreadsheet** or **csv_file** as the data source and enter the required information in the selected source.
+
+    ![ed_step2](https://user-images.githubusercontent.com/61218928/213386208-b43fba73-953a-4087-b65d-a1a3e008bad1.png)
+
+4. Once the field is filled in, run the **Step 3** cell. (:warning: If you have selected **google_spreadsheet**, a pop-up will appear regarding granting permission, so please grant it to Colab.) After Step 3 is executed, the data will be read and the first 10 rows will be displayed. At the same time, input fields will appear, so enter **date column name** and select [**narrow_format** or **wide_format**](https://en.wikipedia.org/wiki/Wide_and_narrow_data) for the data format. In the case of **narrow_format**, also enter **pivot column name** and **kpi column name**.
+
+    ![ed_step3](https://user-images.githubusercontent.com/61218928/213605948-aa150663-cbef-4939-9e9b-9b87c46c1b7f.png)
+
+5. Once the fields are filled in, run the **Step 4** cell. After Step 4 is executed, the daily trend and 7-day moving average will be displayed. The "each" tab also allows you to see the daily trends for individual columns.
+
+    ![ed_step4](https://user-images.githubusercontent.com/61218928/213606481-2704c85e-b1fa-455c-b324-797bece7b6be.png)
+    
+6. Next, run **Step 5** and **Step 6** cells; Step 6 cells take a little longer because they install the [tfcausalImpact library](https://github.com/WillianFuks/tfcausalimpact).
+After installation, an input field will appear in the cell.
+
+    ![ed_step6](https://user-images.githubusercontent.com/61218928/213608197-c4fcfae9-8704-4d5d-8333-553ca62aa362.png)
