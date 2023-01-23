@@ -79,8 +79,25 @@ trend assumptions can be made.
 
 9. Once the fields are filled in, enter the estimated incremental CPA and run the **Step 9** cell. The simulation will then be run with the intervention period and provisional increments given. Depending on the data, this may take more than 10 minutes. 
 
-    After Step 9 is run, the results are displayed in a table. Check the MAPE, budget and p-value.
+    After Step 9 is run, the results are displayed in a table. Check the MAPE, budget and p-value, and consider the intervention period and the assumed increments to experimental design.
     
     ![ed_step9_1](https://user-images.githubusercontent.com/61218928/213636393-c3ad5fe3-a373-4f0e-b3e3-602013a433d6.png)
     
     ![ed_step9_2](https://user-images.githubusercontent.com/61218928/213636438-13e18342-8162-4985-be29-df9bb9f6cfbc.png)
+
+
+#### CausalImpact Analysis Section
+
+1. Press the **Connect** button to connect to the runtime
+
+2. Scroll to CausalImpact Analysis Section and run **Step 1** and **Step 2** cells; Step 2 cells take a little longer because they install the [tfcausalImpact library](https://github.com/WillianFuks/tfcausalimpact). After installation, input field will appear in the cell. Choose **google_spreadsheet** or **csv_file** as the data source and enter the required information in the selected source. 
+
+    ![ci_step2](https://user-images.githubusercontent.com/61218928/213954122-1d98cf80-769a-40f7-9608-f1813dadd20c.png)
+
+3. Once the field is filled in, run the **Step 3** cell. (:warning: If you have selected **google_spreadsheet**, a pop-up will appear regarding granting permission, so please grant it to Colab.) After Step 3 is executed, the data will be read and the first 10 rows will be displayed. At the same time, input fields will appear, so enter **date column name** and enter the **pre-intervention and post-intervention periods**.
+
+    ![ci_step3](https://user-images.githubusercontent.com/61218928/213954140-69441d35-fc16-40bd-959f-cd5fb6c932db.png)
+
+4. Finally, Step 4 will output the results of the analysis.
+
+    ![ci_step4](https://user-images.githubusercontent.com/61218928/213954148-2c811170-d025-4663-a91c-d7941ce48ae3.png)
