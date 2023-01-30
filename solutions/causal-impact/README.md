@@ -50,7 +50,7 @@ trend assumptions can be made.
 ## Note
 
 -   Do not do [HARKing](https://en.wikipedia.org/wiki/HARKing)(hypothesizing after the results are known)
--   Do not do [p-hacking](https://en.wikipedia.org/wiki/Data_dredging). 
+-   Do not do [p-hacking](https://en.wikipedia.org/wiki/Data_dredging)
 
 ## Getting started
 
