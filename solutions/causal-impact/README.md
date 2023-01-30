@@ -28,10 +28,29 @@ appropriate analysis. Therefore, the purpose is to enable the implementation and
 analysis of interventions after classifying time-series data for which parallel
 trend assumptions can be made.
 
+### Typical procedure for use
+
+1. Assume a hypothetical solution to the issue and its factors.
+2. Assume room for KPIs and the mechanisms that drive KPIs depending on the solution.
+3. In advance, decide next-actions to be taken for each result of hypothesis testing (with/without significant difference).
+    - Recommend supporting the mechanism with relevant data other than KPIs
+4. Prepare time-series KPI data for at least 100 time points.
+    - Regional segmentation is recommended.
+    - Previous data, such as the previous year, may make a difference in the market environment.
+    - Relevant data must be independent and unaffected by interventions
+5. **(Experimental Design)** This tool is used to conduct the experimental design. 
+    - Split into groups that are closest to each other where the parallel trend assumption can be placed.
+    - Simulation of required timeframe and budget
+    - :warning: If the parallel trend assumption cannot be placed, we recommend considering another approach
+6. Implemented interventions.
+7. Prepare time-series KPI data, including intervention period and assumed residual period, in addition to previous data.
+8. **(CausalImpact Analysis)** Conduct CausalImpact analysis.
+9. Implement next actions based on results of hypothesis testing
+
 ## Note
 
 -   Do not do [HARKing](https://en.wikipedia.org/wiki/HARKing)(hypothesizing after the results are known)
--   Do not do [p-hacking](https://en.wikipedia.org/wiki/Data_dredging)
+-   Do not do [p-hacking](https://en.wikipedia.org/wiki/Data_dredging). 
 
 ## Getting started
 
