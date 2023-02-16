@@ -109,14 +109,21 @@ trend assumptions can be made.
 
 1. Press the **Connect** button to connect to the runtime
 
-2. Scroll to CausalImpact Analysis Section and run **Step 1** and **Step 2** cells; Step 2 cells take a little longer because they install the [tfcausalImpact library](https://github.com/WillianFuks/tfcausalimpact). After installation, input field will appear in the cell. Choose **google_spreadsheet** or **csv_file** as the data source and enter the required information in the selected source. 
+2. Run **Step 1** cell. If you do so, you will see some selections in the Step 1 cell.
 
-    ![ci_step2](https://user-images.githubusercontent.com/61218928/213954122-1d98cf80-769a-40f7-9608-f1813dadd20c.png)
+3. In question 1, choose **CausalImpact Analysis** and update period before the intervention(**Pre Start & Pre End**) and the period during the intervention(**Post Start and Post End**).<br>
+    ![ci_step1_1](https://user-images.githubusercontent.com/61218928/219256195-ba8d5e5d-df1e-4eb6-8df3-4021056122f6.png)
 
-3. Once the field is filled in, run the **Step 3** cell. (:warning: If you have selected **google_spreadsheet**, a pop-up will appear regarding granting permission, so please grant it to Colab.) After Step 3 is executed, the data will be read and the first 10 rows will be displayed. At the same time, input fields will appear, so enter **date column name** and enter the **pre-intervention and post-intervention periods**.
+4. In question 2, please select the data source from **google_spreadsheet**, **CSV_file**, or **Big_Query**.<br>
+    Then enter the required items.<br>
+    ![ci_step1_2](https://user-images.githubusercontent.com/61218928/219256224-47af732f-f3d6-4a46-8eea-fb8eb13f82b8.png)
 
-    ![ci_step3](https://user-images.githubusercontent.com/61218928/213954140-69441d35-fc16-40bd-959f-cd5fb6c932db.png)
+5. After entering the required items, the data format will be selected. For CausalImpact analysis, please prepare the data in **wide format** in advance.<br>
+    After selecting wide format, please enter the **date column name**.<br>
+    ![ci_step1_3](https://user-images.githubusercontent.com/61218928/219256241-52ab2ad7-a3e7-413c-b27b-b397867ba89c.png)
 
-4. Finally, Step 4 will output the results of the analysis.
-
+6. Once the items are filled in, run the **Step 2** cell. <br>
+    (:warning: If you have selected **google_spreadsheet** or **big_query**, a pop-up will appear regarding granting permission, so please grant it to Colab.) 
+    
+7. After Step 2 is executed, you will see **the results of CausalImpact Analysis**.
     ![ci_step4](https://user-images.githubusercontent.com/61218928/213954148-2c811170-d025-4663-a91c-d7941ce48ae3.png)
