@@ -55,7 +55,7 @@ trend assumptions can be made.
 ## Getting started
 
 1.  Prepare the time series data on spreadsheet or csv file
-2.  Open ipynb file with **[Open in Colab](https://colab.research.google.com/github/google/business_intelligence_group/blob/main/solutions/causal-impact/CausalImpact_with_Experimental_Design.ipynb)** Button.
+2.  Open ipynb file with **[Open in Colab](https://colab.research.google.com/github/google/business_intelligence_group/blob/main/solutions/causal_impact/CausalImpact_with_Experimental_Design.ipynb)** Button.
 3.  Run cells in sequence
 
 ## Tutorial

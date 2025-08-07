@@ -1,0 +1,16 @@
+fastdtw
+tslearn
+tfp-causalimpact
+gspread
+oauth2client
+google-auth
+google-cloud-bigquery
+altair
+numpy
+pandas
+scikit-learn
+statsmodels
+ipywidgets
+tqdm
+tensorflow
+tensorflow-probability
