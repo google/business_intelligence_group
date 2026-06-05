@@ -1,120 +1,164 @@
-# CausalImpact with experimental design
+# CausalImpact with Experimental Design
 
-##### This is not an official Google product.
+## 1. Overview
+This tool (`CausalImpact_with_Experimental_Design.ipynb`) is an all-in-one interactive solution specifically designed for running statistical inference via **Causal Impact Analysis** and preparing pre-campaign setups via **Experimental Design** entirely through a no-code UI widget interface.
 
-CausalImpact is a R package for causal inference using Bayesian structural
-time-series models. In using CausalImpact, the parallel trend assumption is
-needed for counterfactual modeling, so this code performs classification of time
-series data based on DTW distances.
+Users simply execute the Notebook in Google Colaboratory (or standard Jupyter environments) to import data, identify highly correlated control cohorts, and estimate campaign lift and causal effects seamlessly through the interactive UI.
 
-## Overview
+---
 
-### What you can do with CausalImpact with experiment design
+## 2. Prerequisites & Environment
 
--   Experimental Design
-    -   load time series data from google spreadsheet or csv file
-    -   classify time series data so that parallel trend assumptions can be made
-    -   simulate the conditions required for verification
--   CausalImpact Analysis
-    -   load time series data from google spreadsheet or csv file
-    -   CausalImpact Analysis
+* **Execution Environment**: Google Colaboratory (Recommended) or standard Jupyter Notebook environments.
+* **External Integrations**: Authenticates via `google.colab.auth` to load data seamlessly from Google Cloud (BigQuery) and Google Sheets.
 
-### Motivation to develop and open the source code
+### Key Dependencies
 
-Some marketing practitioners pay attention to
-[Causal inference in statistics](https://en.wikipedia.org/wiki/Causal_inference).　However,
-using time series data without parallel trend assumptions does not allow for
-appropriate analysis. Therefore, the purpose is to enable the implementation and
-analysis of interventions after classifying time-series data for which parallel
-trend assumptions can be made.
+| Library | Version / Notes | Purpose |
+| :--- | :--- | :--- |
+| **`tfp-causalimpact`** | - | TensorFlow Probability-based CausalImpact implementation |
+| **`tslearn`** | `==0.7.0` (Pinned) | Time-series clustering (pinned to avoid Numba compilation errors) |
+| **`fastdtw`** | - | Dynamic Time Warping (DTW) distance calculation for time series |
+| **`altair`** | - | Rendering interactive, declarative data visualizations |
+| **`ipywidgets`** | - | Building the graphical user interface (widget layout) |
 
-### Typical procedure for use
+---
 
-1. Assume a hypothetical solution to the issue and its factors.
-2. Assume room for KPIs and the mechanisms that drive KPIs depending on the solution.
-3. In advance, decide next-actions to be taken for each result of hypothesis testing (with/without significant difference).
-    - Recommend supporting the mechanism with relevant data other than KPIs
-4. Prepare time-series KPI data for at least 100 time points.
-    - Regional segmentation is recommended.
-    - Previous data, such as the previous year, may make a difference in the market environment.
-    - Relevant data must be independent and unaffected by interventions
-5. **(Experimental Design)** This tool is used to conduct the experimental design. 
-    - Split into groups that are closest to each other where the parallel trend assumption can be placed.
-    - Simulation of required timeframe and budget
-    - :warning: If the parallel trend assumption cannot be placed, we recommend considering another approach
-6. Implemented interventions.
-7. Prepare time-series KPI data, including intervention period and assumed residual period, in addition to previous data.
-8. **(CausalImpact Analysis)** Conduct CausalImpact analysis.
-9. Implement next actions based on results of hypothesis testing
+## 3. Architecture & Classes
 
-## Note
+While the Notebook resides in a single comprehensive code cell for zero-setup execution, the internal architecture strictly follows **Object-Oriented Design** and **SOLID principles**.
 
--   Do not do [HARKing](https://en.wikipedia.org/wiki/HARKing)(hypothesizing after the results are known)
--   Do not do [p-hacking](https://en.wikipedia.org/wiki/Data_dredging)
+```
+[UI/UX Layer]         InteractiveUI, UIUtils
+      │
+[Orchestrator]        CausalImpactAnalysis
+      │
+[Data Access]         IDataLoader ── (GoogleSheetLoader / CSVLoader / BigQueryLoader)
+      │
+[Preprocessing]       DataPreprocessor, ExploratoryDataAnalyzer
+      │
+[Analytical Engines]  ExperimentalDesigner ── SimulationOptimizer ── CausalImpactEstimator
+```
 
-## Getting started
+### 3.1. UI & Utilities
+* **`UIUtils`**: Utility class providing styling tokens and display helpers.
+  * `apply_text_style()`: Applies tailored HTML styling (e.g., success, failure indicators) and typography sizing to rendered text.
+* **`InteractiveUI`**: Manages the construction of `ipywidgets`, event delegation, and state persistence (Pickle serialization).
+  * `__init__()`: Initializes the UI class, sets default sample data URLs, and instantiates all sub-widgets.
+  * `_define_widgets()`: Defines and initializes foundational UI controls (text inputs, buttons, sliders).
+  * `_define_data_source_widgets()`, `_define_data_format_widgets()`, `_define_experimental_design_widgets()`, `_define_simulation_widgets()`, `_define_date_widgets()`: Constructs specialized widgets for their respective domain configurations.
+  * `generate_ui()`: Renders the structured, tab-based user interface within the Notebook output cell.
+  * `_build_source_selection_tab()`, `_build_data_type_selection_tab()`, `_build_design_type_tab()`, `_build_purpose_selection_tab()`: Assembles the layout components for each operational tab.
+  * `display_simulation_choice()`: Displays candidate control group selections for experimental simulation.
+  * `get_params()` / `set_params()`: Extracts all current UI states into a dictionary or populates widgets from a state payload.
+  * `download_params()` / `load_params()`: Serializes current configuration to a downloadable Pickle artifact, or restores state from an uploaded file.
 
-1.  Prepare the time series data on spreadsheet or csv file
-2.  Open ipynb file with **[Open in Colab](https://colab.research.google.com/github/google/business_intelligence_group/blob/main/solutions/causal-impact/CausalImpact_with_Experimental_Design.ipynb)** Button.
-3.  Run cells in sequence
+### 3.2. Data Loading (`IDataLoader` & Loaders)
+Implements the **Strategy Pattern** adhering to SOLID Open/Closed (OCP) and Dependency Inversion (DIP) principles via the `IDataLoader` protocol.
 
-## Tutorial
-#### CausalImpact Analysis Section
+* **`IDataLoader` (Protocol)**
+  * `load_data()`: Abstract protocol method for data ingestion.
+* **`GoogleSheetLoader`**: Ingests dataset payloads from external Google Sheets URLs.
+* **`CSVLoader`**: Parses locally uploaded CSV file streams.
+* **`BigQueryLoader`**: Executes SQL queries to load data from BigQuery tables.
+* **`DataLoader` (Orchestrator)**
+  * `load_data()`: Dynamically instantiates the requested concrete Loader based on configuration parameters and returns the consolidated dataset.
 
-1. Press the **Connect** button to connect to the runtime
+### 3.3. Preprocessing & Exploratory Analysis
+* **`DataPreprocessor`**
+  * `format_data()`: Cleans raw datasets by dropping unnecessary columns, indexing temporal keys, imputing missing values, and resampling temporal frequencies.
+  * `_shape_wide()`: Pivots Long-form raw metrics into Wide-form multidimensional time series.
+* **`ExploratoryDataAnalyzer`**
+  * `check_data_quality()`: Scans datasets for null values, verifies temporal continuity, and outputs structural summaries.
+  * `trend_check()`: Executes time-series clustering using `tslearn` (via DTW) to group and visualize highly correlated metric behaviors over time.
 
-2. Run **Step 1** cell. Step 1 cells take a little longer because they install the [tfcausalImpact library](https://github.com/WillianFuks/tfcausalimpact).<br>If you do so, you will see some selections in the Step 1 cell.
+### 3.4. Analytical & Simulation Engines
+* **`CausalImpactEstimator` (Causal Inference)**: Wraps `tfp-causalimpact` to execute state-space structural time series modeling.
+  * `create_causalimpact_object()`: Constructs and fits Structural Time Series (STS) state-space models incorporating custom pre/post-intervention periods and seasonality.
+  * `plot_causalimpact()`: Renders interactive charts showing counterfactual trajectories, pointwise contributions, and cumulative lift.
+  * `display_causalimpact_result()`: Outputs detailed summary tables (absolute/relative lift, posterior tail-area probabilities, and confidence intervals).
+* **`ExperimentalDesigner` (Cohort Optimization)**
+  * `run_design()`: Searches and optimizes historical time series via DTW distances to identify highly correlated control variables for a target metric.
+  * `_calculate_distance()`: Computes pairwise Dynamic Time Warping distance matrices across candidate metrics.
+  * `_n_part_split()`: Partitions datasets into N balanced subgroups based on historical similarity metrics (used for cross-validation splits).
+  * `_find_similar()`: Evaluates candidate subsets to discover variable combinations that minimize Mean Absolute Percentage Error (MAPE) against the target trajectory.
+  * `_from_share()` / `_given_assignment()`: Handles share-based control extraction and deterministic variable allocations provided by the user.
+  * `visualize_candidate()`: Renders historical alignment comparisons of chosen candidate variables using Altair.
+* **`SimulationOptimizer` (Power Simulation)**
+  * `__init__()`: Accepts and binds an active `CausalImpactEstimator` instance.
+  * `generate_simulation()`: Executes synthetic statistical power simulations to verify if the chosen control cohort can robustly detect hypothetical lift percentages.
+  * `_extract_data_from_choice()`: Subsets the dataset according to the user's selected candidate combination.
+  * `_execute_simulation()`: Runs grid-search iterations evaluating various "campaign durations" and "lift effect sizes" to assess detection accuracy and bias.
+  * `_display_simulation_result()` / `_plot_simulation_result()`: Outputs grid-search success summaries and renders scatter/line charts evaluating precision versus statistical bias.
 
-3. In question 1, choose **CausalImpact Analysis** and update period before the intervention(**Pre Start & Pre End**) and the period during the intervention(**Post Start and Post End**).<br>
-    ![ci_step1_1](https://user-images.githubusercontent.com/61218928/219256195-ba8d5e5d-df1e-4eb6-8df3-4021056122f6.png)
+### 3.5. Main Orchestrator
+* **`CausalImpactAnalysis`**
+  * The primary orchestration class uniting the system. Bridges interactive UI callbacks with underlying execution steps: data loading, cleaning, executing causal modeling (`run_causalImpact`), running experimental design (`run_experimental_design`), and simulating statistical sensitivity (`generate_simulation`).
 
-4. In question 2, please select the data source from **google_spreadsheet**, **CSV_file**, or **Big_Query**.<br>
-    Then enter the required items.<br>
-    ![ci_step1_2](https://user-images.githubusercontent.com/61218928/219256224-47af732f-f3d6-4a46-8eea-fb8eb13f82b8.png)
+---
 
-5. After entering the required items, the data format will be selected. For CausalImpact analysis, please prepare the data in **wide format** in advance.<br>
-    After selecting wide format, enter the **date column name**.<br>
-    ![ci_step1_3](https://user-images.githubusercontent.com/61218928/219256241-52ab2ad7-a3e7-413c-b27b-b397867ba89c.png)
+## 4. Data Flow
 
-6. Once the items are filled in, run the **Step 2** cell. <br>
-    (:warning: If you have selected **google_spreadsheet** or **big_query**, a pop-up will appear regarding granting permission, so please grant it to Colab.) 
-    
-7. After Step 2 is executed, you will see **the results of CausalImpact Analysis**.
-    ![ci_step4](https://user-images.githubusercontent.com/61218928/213954148-2c811170-d025-4663-a91c-d7941ce48ae3.png)
+### ① Causal Impact Analysis Workflow
+The operational pipeline for evaluating post-intervention causal lift after a campaign has run.
 
-#### Experimental Design Section
+```mermaid
+graph TD
+    A[Data Source: Sheets/CSV/BQ] -->|DataLoader| B(Raw DataFrame)
+    B -->|DataPreprocessor| C(Cleaned Wide DataFrame)
+    C -->|UI Config: Pre/Post Periods| D(CausalImpactEstimator)
+    D -->|Fit Model| E{CausalImpact STS Model}
+    E -->|Inference| F[Render Visualizations & Summary]
 
-1. Press the **Connect** button to connect to the runtime
+    classDef source fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef process fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef model fill:#fbf,stroke:#333,stroke-width:2px;
+    class A source;
+    class B,C,D process;
+    class E model;
+```
 
-2. Run **Step 1** cell. Step 1 cells take a little longer because they install the [tfcausalImpact library](https://github.com/WillianFuks/tfcausalimpact).<br>If you do so, you will see some selections in the Step 1 cell.
+### ② Experimental Design Workflow
+The pre-campaign preparation pipeline for discovering optimal control groups from historical data and validating sensitivity via synthetic grid simulations.
 
-3. In question 1, choose **Experimental Design** and update the term(**Start Date & End Date**) to be used in the Experimental Design.
-    ![ed_step1_1](https://user-images.githubusercontent.com/61218928/219262327-5dfd104f-c413-4ba4-b793-cf16badb6b84.png)
+```mermaid
+graph TD
+    A[Data Source: Sheets/CSV/BQ] -->|DataLoader| B(Raw DataFrame)
+    B -->|DataPreprocessor| C(Cleaned Wide DataFrame)
+    C -->|ExploratoryDataAnalyzer| D[Verify Quality & Cluster Trends]
+    D -->|ExperimentalDesigner<br>Target Metric Binding| E(Compute DTW & Optimize MAPE)
+    E --> F[Present Control Candidates]
+    F -->|User Selects Candidate| G[SimulationOptimizer]
+    G -->|Grid Search: Duration & Lift Size| H[Visualize Simulation Results<br>Evaluate Statistical Power & Bias]
 
-4. After updating the term, select the **type of Experimental Design** and update the required items.<br>
-    * A: divide_equally divides the time series data into n groups with similar movements.
-    * B: similarity_selection extracts n groups that move similarly to a particular column.
+    classDef source fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef process fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef output fill:#bfb,stroke:#333,stroke-width:2px;
+    class A source;
+    class B,C,D,E,G process;
+    class F,H output;
+```
 
-    ![ed_step1_2](https://user-images.githubusercontent.com/61218928/219262346-ccd9cb99-f45e-477d-81f2-f32263d842f7.png)
-    
-5. After updating required items, enter the estimated incremental CPA.
-    ![ed_step1_3](https://user-images.githubusercontent.com/61218928/219262361-96d91a95-dc45-49e8-9fbf-dc00a2ddbca8.png)
+---
 
-6. In question 2, please select the data source from **google_spreadsheet**, **CSV_file**, or **Big_Query**.<br>
-    Then enter the required items.<br>
-    ![ed_step1_4](https://user-images.githubusercontent.com/61218928/219256224-47af732f-f3d6-4a46-8eea-fb8eb13f82b8.png)
+## 5. UI Operations
 
-6. After entering the required items, select data format [**narrow_format** or **wide_format**](https://en.wikipedia.org/wiki/Wide_and_narrow_data) and enter the required fields.
-    ![ed_step1_5](https://user-images.githubusercontent.com/61218928/219262376-86e807b1-15f5-4551-a598-4dcda4ba410d.png)
+1. **Data Source Selection**
+   * Input a Google Sheets sharing link, upload a local CSV file, or specify a BigQuery project and table identifier.
+2. **Data Format Configuration**
+   * Designate the temporal index (`Date column`), target KPI column, and pivot/aggregation rules to construct a clean time-series matrix.
+3. **Purpose Selection**
+   * **`experimental_design`**: Evaluates historical baseline metrics to discover highly correlated control variables and execute statistical sensitivity simulations prior to campaign launch.
+   * **`causal_impact`**: Analyzes actual post-intervention data to estimate statistical significance and calculate true campaign lift.
 
-7. Once the items are filled in, run the **Step 2** cell. <br>
-    (:warning: If you have selected **google_spreadsheet** or **big_query**, a pop-up will appear regarding granting permission, so please grant it to Colab.) 
+---
 
-8. The output results will vary depending on the type of experimental design, but select the data on which you want to run the simulation.
+## 6. Maintenance
 
-9. Once the items are filled in, run the **Step 3** cell. Depending on the data, this may take more than 10 minutes. 
-    After Step 3 is run, the results are displayed in a table. Check the MAPE, budget and p-value, and consider the intervention period and the assumed increments to experimental design.
-    ![ed_step3](https://user-images.githubusercontent.com/61218928/213636393-c3ad5fe3-a373-4f0e-b3e3-602013a433d6.png)
-    
-10. run the **Step 4** cell. <br>
-    ![ed_step4](https://user-images.githubusercontent.com/61218928/213636438-13e18342-8162-4985-be29-df9bb9f6cfbc.png)
+* **Single-File Notebook Strategy**
+  * To ensure seamless, zero-dependency execution for end-users, all class definitions are maintained directly within a single interactive Notebook (`.ipynb`) rather than split across separate `.py` modules.
+  * When developing new features or refactoring functionality, modify the designated module classes directly inside the Notebook file.
+* **Extending Data Loaders**
+  * Adding support for new database drivers or APIs simply requires creating a new concrete subclass inheriting from `IDataLoader` and registering it into the selection mapping inside `DataLoader`.
+* **Style Guide Enforcement**
+  * Maintain clean readability and robust linting by strictly including **Python Type Hints** (arguments and return types) and documenting classes and methods using **Google Style English Docstrings**.
