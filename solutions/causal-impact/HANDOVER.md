@@ -18,23 +18,72 @@
 ## 3. 内部アーキテクチャ (Architecture & Classes)
 Notebookは1つの巨大なコードセルにまとめられていますが、内部はオブジェクト指向およびSOLID原則に基づいてクラス分割されています。
 
-- **`CausalImpactAnalysis` (Orchestrator)**
-  - 全体の処理を統括するメインクラス。以下の各コンポーネントを保持し、処理を橋渡しします。
-- **`InteractiveUI`**
-  - `ipywidgets` を使ったUIの構築とイベントハンドリングを担当します。設定パラメータの保存(pickle)・読み込みも行います。
-- **`DataLoader` (データ読み込み)**
-  - `IDataLoader` インターフェース（Protocol）を利用したStrategyパターンを採用。
-  - 実装クラス: `GoogleSheetLoader`, `CSVLoader`, `BigQueryLoader`。新しいデータソースを追加する場合は、このProtocolに従ってクラスを追加します（OCP原則）。
-- **`DataPreprocessor` (データ前処理)**
-  - 指定されたKPI列や日付列を用いて、分析に適した形（主にWide形式の時系列データ）にデータを整形します。
-- **`ExploratoryDataAnalyzer` (探索的データ分析)**
-  - データの品質チェック（欠損値等）や、DTWを用いた時系列のトレンド・クラスタリング可視化を行います。
-- **`ExperimentalDesigner` (実験計画)**
-  - 施策対象（ターゲット）の時系列の動きと最も類似する対照群（コントロール）の組み合わせを、MAPE（平均絶対パーセンテージ誤差）などの指標を用いて探索・最適化します。
-- **`SimulationOptimizer` (シミュレーション)**
-  - 施策を実施した場合の効果サイズ（Treat Impact）や期間を仮定し、因果推論が正しく検出できるかのシミュレーションを実行します。
-- **`CausalImpactEstimator` (効果検証)**
-  - `tfp-causalimpact` をラップし、実際の事前・事後期間のデータを元に因果推論モデルを学習し、結果をグラフ化します。
+### `CausalImpactAnalysis` (Orchestrator)
+全体の処理を統括するメインクラス。以下の各コンポーネントを保持し、処理を橋渡しします。
+- `load_data()`: `DataLoader` を呼び出し、データを取得。
+- `format_data()`: 取得したデータを `DataPreprocessor` に渡し、整形。
+- `run_causalImpact()`: 因果推論の処理フロー（UIのパラメータ取得→モデリング→可視化）を実行。
+- `run_experimental_design()`: 実験計画の処理フロー（データ品質確認→トレンド確認→コントロール選定）を実行。
+
+### `InteractiveUI`
+`ipywidgets` を使ったUIの構築とイベントハンドリングを担当します。
+- `generate_ui()`: Notebook上にタブ形式のウィジェットインターフェースを描画。
+- `get_params()` / `set_params()`: 現在のUI上の設定値を辞書形式で取得、または一括設定。
+- `save_params()` / `load_params()`: 設定値をPickleファイルとして保存/読み込み。
+
+### `DataLoader` (データ読み込み)
+`IDataLoader` インターフェースを利用したStrategyパターンを採用。
+- `load_data()`: 選択されたデータソース (Sheets, CSV, BigQuery) に応じて、対応する具象クラス (`GoogleSheetLoader`, `CSVLoader`, `BigQueryLoader`) の `load_data()` を呼び出し、`pd.DataFrame` を返します。
+
+### `DataPreprocessor` (データ前処理)
+- `format_data()`: 不要カラムの削除、日付列のIndex化、欠損値の補完やサンプリングレートの調整を行います。
+- `_shape_wide()`: 縦持ち(Long)データを横持ち(Wide)データへピボット変換します。
+
+### `ExploratoryDataAnalyzer` (探索的データ分析)
+- `check_data_quality()`: データの欠損値の有無や期間の範囲を出力します。
+- `trend_check()`: `tslearn` (DTW) を用いて時系列クラスタリングを行い、似た動きをする変数をグループ化して可視化します。
+
+### `ExperimentalDesigner` (実験計画)
+- `run_design()`: 指定期間のデータを使って、ターゲット変数と相関/連動性の高いコントロール変数を探索します。
+- `_calculate_distance()`: 時系列データ間のDTW(Dynamic Time Warping)距離を計算します。
+- `_find_similar()`: ターゲットに対する距離が近い変数群を抽出し、MAPE(平均絶対パーセンテージ誤差)が最小になる組み合わせを最適化探索します。
+
+### `SimulationOptimizer` (シミュレーション)
+- `generate_simulation()`: 探索されたコントロール群を用いて、因果推論モデルが仮想の施策効果（Lift）を正しく検出できるかシミュレーションします。
+- `_execute_simulation()`: 複数の「施策期間」と「効果サイズ(Lift %)」のパターン(Grid Search)でCausalImpactモデルを走らせます。
+
+### `CausalImpactEstimator` (効果検証)
+- `create_causalimpact_object()`: `tfp-causalimpact` ライブラリを使用して、状態空間モデル(Structural Time Series)を構築・学習します。
+- `plot_causalimpact()`: 推定された因果効果（元の推移、点推定、累積効果）をグラフとして描画します。
+- `display_causalimpact_result()`: サマリー統計量（絶対効果、相対効果のp値など）を表示します。
+
+## 3.5. データ処理フロー (Data Flow)
+
+### ① 因果推論 (Causal Impact Analysis) のフロー
+実際に施策を行った後、その施策効果（リフト）を推定する流れです。
+
+```mermaid
+graph TD
+    A[データソース: Sheets/CSV/BQ] -->|DataLoader| B(生データ DataFrame)
+    B -->|DataPreprocessor| C(整形済み Wideデータ)
+    C -->|UI: パラメータ設定<br>事前・事後期間等| D(CausalImpactEstimator)
+    D -->|学習| E{CausalImpact モデル}
+    E -->|推定| F[結果の可視化・サマリー出力]
+```
+
+### ② 実験計画 (Experimental Design) のフロー
+施策を行う前に、過去データを用いて最適なコントロール群を見つけ出し、シミュレーションを行う流れです。
+
+```mermaid
+graph TD
+    A[データソース: Sheets/CSV/BQ] -->|DataLoader| B(生データ DataFrame)
+    B -->|DataPreprocessor| C(整形済み Wideデータ)
+    C -->|ExploratoryDataAnalyzer| D[データ品質・トレンドの確認]
+    D -->|ExperimentalDesigner<br>ターゲット変数の指定| E(DTW距離計算 & MAPE最適化探索)
+    E --> F[類似するコントロール候補の提示]
+    F -->|ユーザーが候補を選択| G[SimulationOptimizer]
+    G -->|Grid Search: 効果量・期間| H[シミュレーション結果の可視化<br>検出力・偏りの確認]
+```
 
 ## 4. UIと操作手順 (UI Operations)
 1. **Data Source (データソース)**:
